@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++20 concept</title>
+    <link rel="stylesheet" href="revealjs/css/reveal.css">
+    <link rel="stylesheet" href="revealjs/css/theme/solarized.css" id="theme">
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="revealjs/lib/css/zenburn.css">
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'revealjs/css/print/pdf.css' :
+                  'revealjs/css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+    <style type="text/css">
+      .reveal {
+        font-family: Meiryo, メイリオ, sans-serif;
+        font-size: 25px;
+        font-weight: normal;
+        color: #657b83; }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3,
+      .reveal h4,
+      .reveal h5,
+      .reveal h6 {
+        margin: 0 0 0 0;
+        font-family: Meiryo, メイリオ, sans-serif;
+        font-weight: normal;
+        line-height: 1.2;
+        letter-spacing: normal;
+        text-transform: none;
+        text-shadow: none;
+        word-wrap: break-word; }
+      .reveal h1 { font-size: 2em; }
+      .reveal h2 { font-size: 1em; }
+      .reveal p {
+        margin-top: 10px;
+        text-align: left;
+        line-height: 180%; }
+      .reveal li { margin: 15px 15px 0 0; }
+      .reveal .box-definition {
+        border: 2px solid #8d1e47;
+        border-radius: 4px;
+        margin-top: 0.5em;
+        margin-bottom: 0em;
+        padding: 0.5em;
+        position: relative;
+        text-align: left;
+      }
+      .reveal .box-definition::before {
+        background-color: #fdf6e3;
+        color: #da4033;
+        content: "定義";
+        font-weight: bold;
+        left: 0.5em;
+        padding: 0.5em;
+        position: absolute;
+        top: -1em;
+      }
+      .reveal code { font-size: 1.3em; line-height: 1.2;}
+    </style>
+    <style type="text/css">
+      .tableCenter tbody tr td {text-align: center; vertical-align: middle;}
+      .tableCenter thead tr th {text-align: center;}
+      span.irregular {text-decoration:underline;}
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>C++20 concept</h1>
+          <address>武智</address>
+        </section>
+        <section>
+          <h1>C++20 の新機能 concept</h1>
+          <p>
+            <ul>
+              <li>C++20とは、2020年に策定される予定のC++規格。</li>
+              <li>C++20では concept という新機能が追加されることになっている。</li>
+              <li>concept は、「型に制約を付ける」という機能。</li>
+            </ul>
+          </p>
+        </section>
+        <section>
+          <h1>template メタプログラミング</h1>
+          <p>concept は template メタプログラミングで活躍する。</p>
+          <p>C++では引数の型によって関数のオーバーロードができる。</p>
+          <pre><code class="cpp">int    add(int    a, int    b){ return a + b; }
+double add(double a, double b){ return a + b; }</code></pre>
+          <p>template を使って簡単にスマートに書ける。</p>
+          <pre><code class="cpp">template &lt;typename T&gt; T add(T a, T b){ return a + b; }</code></pre>
+          <p>このように型を変数のように扱うスタイルが template メタプログラミング(TMP)。</p>
+        </section>
+        <section>
+          <h1>型の場合分け</h1>
+          <p>型の性質で処理を分けたくなることがある。<br>例えば、変数 x の JSON value 文字列を返す関数 getJSON を考える。</p>
+          <p>数値（int や double）は引用符を付けずに文字列化、文字列（const char *）は引用符を付けて文字列化する。つまり</p>
+          <pre><code class="cpp">getJSON(5)      -> 文字列 "5"
+getJSON(3.5)    -> 文字列 "3.50000"
+getJSON("hoge") -> 文字列 "\"hoge\""</code></pre>
+          <p>となる関数 getJSON を作る。</p>
+        </section>
+        <section>
+          <h1>concept なしの場合</h1>
+          <p>現在の C++ でも SFINAE という仕組みを使って getJSONを
+            実現できる。</p>
+          <pre><code class="cpp">extern void* enabler;
+template &lt;bool condition, typename T = void&gt;
+  using enable_if_type = typename std::enable_if_t&lt;condition, T&gt;;
+
+// 数値（算術型）
+template &lt;typename T, enable_if_type&lt;std::is_arithmetic&lt;T&gt;{}&gt;*& = enabler&gt;
+  auto getJSON(T x){ return std::to_string(x); }
+
+// 文字列 (const char * または std::string)
+template &lt;typename T, enable_if_type&lt;std::is_same&lt;T, const char *&gt;{} ||
+                                     std::is_same&lt;T, std::string &gt;{}&gt;*& = enabler&gt;
+  auto getJSON(T x){ return "\"" + std::string(x) + "\""; }
+
+int main(){
+  std::cout &lt;&lt; getJSON(5) &lt;&lt; std::endl; // 5
+  std::cout &lt;&lt; getJSON("hello.") &lt;&lt; std::endl; // "hello."
+  return 0;
+}</code></pre>
+          <p>しかし、非常に意味の読み取りにくいコードになる。<span style="font-size: 50%;">ときに黒魔術と呼ばれる。</span> <br>
+            （初期の C++ ではこのようなコードを想定していなかったため）</p>
+        </section>
+        <section>
+          <h1>concept による型の制約</h1>
+          <p>concept を使うと、getJSON はこうなる。</p>
+          <pre><code>// 数値（算術型）であるという制約
+template &lt;typename T&gt; concept ConceptNumeric = std::is_arithmetic_v&lt;T&gt;;
+// 文字列（const char * または std::string）であるという制約
+template &lt;typename T&gt; concept ConceptString = std::is_same_v&lt;T, const char *&gt; ||
+                                              std::is_same_v&lt;T, std::string&gt;;
+
+// 数値
+template &lt;ConceptNumeric T&gt;
+  auto getJSON(T x){ return std::to_string(x); }
+
+// 文字列
+template &lt;ConceptString T&gt;
+  auto getJSON(T x){ return "\"" + std::string(x) + "\""; }
+
+int main(){
+  std::cout &lt;&lt; getJSON(5) &lt;&lt; std::endl; // 5
+  std::cout &lt;&lt; getJSON("hello.") &lt;&lt; std::endl; // "hello."
+  return 0;
+}</code></pre>
+          <p>かなり可読性が上がる。</p>
+        </section>
+        <section>
+          <h1>GCC 8.0 で実行できる concept</h1>
+          <p>現在策定中の concept を解釈できるコンパイラは今のところない（多分）。<br>
+            ただ、2014年当時のドラフト版 concept が GCC 8.0 に実装されている。</p>
+          <pre><code>// 数値（算術型）であるという制約
+template &lt;typename T&gt; concept bool ConceptNumeric = std::is_arithmetic_v&lt;T&gt;;
+// 文字列（const char * または std::string）であるという制約
+template &lt;typename T&gt; concept bool ConceptCString = std::is_same_v&lt;T, const char *&gt; ||
+                                                    std::is_same_v&lt;T, std::string&gt;;
+
+// 数値
+auto getJSON(ConceptNumeric x){ return std::to_string(x); }
+
+// 文字列型 (const char *)
+auto getJSON(ConceptCString x){ return "\"" + std::string(x) + "\""; }
+
+int main(){
+  std::cout &lt;&lt; getJSON(5) &lt;&lt; std::endl; // 5
+  std::cout &lt;&lt; getJSON("hello.") &lt;&lt; std::endl; // "hello."
+  return 0;
+}</code></pre>
+          <p>これは g++ 8.0 (-std=c++2a -fconcepts) でコンパイルできる。</p>
+        </section>
+        <section>
+          <h1>まとめ</h1>
+          <ul><li>C++20 には concept という機能が追加される予定。</li>
+            <li>concept は型に「数値型である」「参照である」「あるメンバ関数を持っている」
+              といった制約を付けるための構文。</li>
+            <li>上手く使えばメタプログラミングの効率、可読性、保守性が改善されるはず。</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+    <script src="revealjs/lib/js/head.min.js"></script>
+    <script src="revealjs/js/reveal.js"></script>
+    <!-- for reveal.js -->
+    <script>
+      Reveal.initialize(
+        {controls: true,
+         progress: true,
+         history: true,
+         center: false,
+         transition: 'none',
+         transitionSpeed: 'fast',
+         slideNumber: true,
+         math: {mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+                config: 'TeX-AMS_HTML-full'},
+         dependencies: [{src: 'revealjs/lib/js/classList.js',
+                         condition: function() { return !document.body.classList; }},
+                        {src: 'revealjs/plugin/zoom-js/zoom.js', async: true},
+                        {src: 'revealjs/plugin/notes/notes.js', async: true},
+                        {src: 'revealjs/plugin/math/math.js', async: true},
+                        {src: 'revealjs/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },]},);
+    </script>
+  </body>
+</html>
