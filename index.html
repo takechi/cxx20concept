@@ -99,8 +99,8 @@ double add(double a, double b){ return a + b; }</code></pre>
         </section>
         <section>
           <h1>型の場合分け</h1>
-          <p>型の性質で処理を分けたくなることがある。<br>例えば、変数 x の JSON value 文字列を返す関数 getJSON を考える。</p>
-          <p>数値（int や double）は引用符を付けずに文字列化、文字列（const char *）は引用符を付けて文字列化する。つまり</p>
+          <p>型の性質で処理を分けたくなることがある。<br>例えば、変数 x の JSON value 文字列を返す関数 getJSON(x) を考える。</p>
+          <p>数値（int や double）は引用符 "" を付けずに文字列化し、文字列（const char * や std::string）は引用符を付けて文字列化する。つまり</p>
           <pre><code class="cpp">getJSON(5)      -> 文字列 "5"
 getJSON(3.5)    -> 文字列 "3.50000"
 getJSON("hoge") -> 文字列 "\"hoge\""</code></pre>
