@@ -42,7 +42,7 @@
         margin-top: 10px;
         text-align: left;
         line-height: 180%; }
-      .reveal li { margin: 15px 15px 0 0; }
+      .reveal li { margin: 25px 15px 0 0; }
       .reveal .box-definition {
         border: 2px solid #8d1e47;
         border-radius: 4px;
@@ -81,26 +81,26 @@
           <h1>C++20 の新機能 concept</h1>
           <p>
             <ul>
-              <li>C++20とは、2020年に策定される予定のC++規格。</li>
-              <li>C++20では concept という新機能が追加されることになっている。</li>
+              <li>C++20 とは、2020 年に改訂発行される予定の C++ 規格。</li>
+              <li>C++20 では concept という新機能が追加されることになっている。</li>
               <li>concept は、「型に制約を付ける」という機能。</li>
             </ul>
           </p>
         </section>
         <section>
           <h1>template メタプログラミング</h1>
-          <p>concept は template メタプログラミングで活躍する。</p>
+          <p>concept は template メタプログラミング(TMP)で活躍する。</p>
           <p>C++では引数の型によって関数のオーバーロードができる。</p>
           <pre><code class="cpp">int    add(int    a, int    b){ return a + b; }
 double add(double a, double b){ return a + b; }</code></pre>
           <p>template を使って簡単にスマートに書ける。</p>
           <pre><code class="cpp">template &lt;typename T&gt; T add(T a, T b){ return a + b; }</code></pre>
-          <p>このように型を変数のように扱うスタイルが template メタプログラミング(TMP)。</p>
+          <p>このように型を変数のように扱うスタイルが template メタプログラミング。</p>
         </section>
         <section>
           <h1>型の場合分け</h1>
           <p>型の性質で処理を分けたくなることがある。<br>例えば、変数 x の JSON value 文字列を返す関数 getJSON(x) を考える。</p>
-          <p>数値（int や double）は引用符 "" を付けずに文字列化し、文字列（const char * や std::string）は引用符を付けて文字列化する。つまり</p>
+          <p>数値（int や double）はそのまま文字列化し、文字列（const char * や std::string）は<span style="text-decoration: underline;">引用符 " " を付けて</span>文字列化する。つまり</p>
           <pre><code class="cpp">getJSON(5)      -> 文字列 "5"
 getJSON(3.5)    -> 文字列 "3.50000"
 getJSON("hoge") -> 文字列 "\"hoge\""</code></pre>
@@ -108,8 +108,7 @@ getJSON("hoge") -> 文字列 "\"hoge\""</code></pre>
         </section>
         <section>
           <h1>concept なしの場合</h1>
-          <p>現在の C++ でも SFINAE という仕組みを使って getJSONを
-            実現できる。</p>
+          <p>現在の C++ でも SFINAE という仕組みを使って getJSONを実現できる。</p>
           <pre><code class="cpp">extern void* enabler;
 template &lt;bool condition, typename T = void&gt;
   using enable_if_type = typename std::enable_if_t&lt;condition, T&gt;;
@@ -128,7 +127,7 @@ int main(){
   std::cout &lt;&lt; getJSON("hello.") &lt;&lt; std::endl; // "hello."
   return 0;
 }</code></pre>
-          <p>しかし、非常に意味の読み取りにくいコードになる。<span style="font-size: 50%;">ときに黒魔術と呼ばれる。</span> <br>
+          <p>しかし、非常に意味の読み取りにくいコードになる。<span style="font-size: 70%;">ときに黒魔術と呼ばれる。</span> <br>
             （初期の C++ ではこのようなコードを想定していなかったため）</p>
         </section>
         <section>
@@ -153,12 +152,12 @@ int main(){
   std::cout &lt;&lt; getJSON("hello.") &lt;&lt; std::endl; // "hello."
   return 0;
 }</code></pre>
-          <p>かなり可読性が上がる。</p>
+          <p>かなり可読性が上がる。また、エラーメッセージも分かり易くなる。</p>
         </section>
         <section>
-          <h1>GCC 8.0 で実行できる concept</h1>
+          <h1>GCC で実行できる concept</h1>
           <p>現在策定中の concept を解釈できるコンパイラは今のところない（多分）。<br>
-            ただ、2014年当時のドラフト版 concept が GCC 8.0 に実装されている。</p>
+            ただ、2014 年当時のドラフト版 concept が GCC 6 以上に実装されている。</p>
           <pre><code>// 数値（算術型）であるという制約
 template &lt;typename T&gt; concept bool ConceptNumeric = std::is_arithmetic_v&lt;T&gt;;
 // 文字列（const char * または std::string）であるという制約
@@ -176,7 +175,7 @@ int main(){
   std::cout &lt;&lt; getJSON("hello.") &lt;&lt; std::endl; // "hello."
   return 0;
 }</code></pre>
-          <p>これは g++ 8.0 (-std=c++2a -fconcepts) でコンパイルできる。</p>
+          <p>これは g++ 9.0 (-std=c++2a -fconcepts) でコンパイルを確認している。</p>
         </section>
         <section>
           <h1>まとめ</h1>
