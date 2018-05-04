@@ -43,26 +43,10 @@
         text-align: left;
         line-height: 180%; }
       .reveal li { margin: 25px 15px 0 0; }
-      .reveal .box-definition {
-        border: 2px solid #8d1e47;
-        border-radius: 4px;
-        margin-top: 0.5em;
-        margin-bottom: 0em;
-        padding: 0.5em;
-        position: relative;
-        text-align: left;
-      }
-      .reveal .box-definition::before {
-        background-color: #fdf6e3;
-        color: #da4033;
-        content: "定義";
-        font-weight: bold;
-        left: 0.5em;
-        padding: 0.5em;
-        position: absolute;
-        top: -1em;
-      }
-      .reveal code { font-size: 1.3em; line-height: 1.2;}
+      .reveal code {font-size: 130%; line-height: 110%;}
+      .reveal .normalsize {font-size: 100%; line-height: 100%;}
+      .reveal .weak {font-size: 70%;}
+      .reveal .under {border-bottom: dashed 2px green;}
     </style>
     <style type="text/css">
       .tableCenter tbody tr td {text-align: center; vertical-align: middle;}
@@ -82,33 +66,49 @@
           <p>
             <ul>
               <li>C++20 とは、2020 年に改訂発行される予定の C++ 規格。</li>
-              <li>C++20 では concept という新機能が追加されることになっている。</li>
-              <li>concept は、「型に制約を付ける」という機能。</li>
+              <li>C++20 では concept という機能が追加されることになっている。</li>
+              <li>concept は「型に制約を付ける」という機能。</li>
             </ul>
           </p>
         </section>
         <section>
-          <h1>template メタプログラミング</h1>
+          <h1>template メタプログラミング(TMP)</h1>
           <p>concept は template メタプログラミング(TMP)で活躍する。</p>
           <p>C++では引数の型によって関数のオーバーロードができる。</p>
           <pre><code class="cpp">int    add(int    a, int    b){ return a + b; }
 double add(double a, double b){ return a + b; }</code></pre>
-          <p>template を使って簡単にスマートに書ける。</p>
-          <pre><code class="cpp">template &lt;typename T&gt; T add(T a, T b){ return a + b; }</code></pre>
-          <p>このように型を変数のように扱うスタイルが template メタプログラミング。</p>
+          <p>template を使うと、複数の型を <code class="cpp normalsize">typename T</code> で置き換えて</p>
+          <pre><code class="cpp">template &lt;typename T&gt;
+  T add(T a, T b){ return a + b; }</code></pre>
+          <p>と書ける。</p>
+          <p>このように、型を値に持つ変数（のようなもの）を考えるのが TMP。</p>
         </section>
         <section>
           <h1>型の場合分け</h1>
-          <p>型の性質で処理を分けたくなることがある。<br>例えば、変数 x の JSON value 文字列を返す関数 getJSON(x) を考える。</p>
-          <p>数値（int や double）はそのまま文字列化し、文字列（const char * や std::string）は<span style="text-decoration: underline;">引用符 " " を付けて</span>文字列化する。つまり</p>
-          <pre><code class="cpp">getJSON(5)      -> 文字列 "5"
-getJSON(3.5)    -> 文字列 "3.50000"
-getJSON("hoge") -> 文字列 "\"hoge\""</code></pre>
-          <p>となる関数 getJSON を作る。</p>
+          <p>型の性質で処理を分けたくなることがある。<br>例えば、変数 <code class="cpp normalsize">x</code> の JSON value 文字列を返す関数 <code class="cpp normalsize">getJSON(x)</code> を考える。</p>
+          <p>数値（<code class="cpp normalsize">int</code> や <code class="cpp normalsize">double</code>）はそのまま文字列化し、文字列（<code class="cpp normalsize">const char *</code> や <code class="cpp normalsize">std::string</code>）は<span class="under">引用符 <code class="cpp normalsize">" "</code> を付けて</span>文字列化する。つまり</p>
+          <table>
+            <thead>
+              <tr>
+                <th>コード</th><th></th><th>返り値</th>
+            </thead>
+            <tbody>
+            <tr>
+              <td><code class="cpp normalsize">getJSON(5)</code></td><td>⇒</td><td>文字列 <code class="cpp normalsize">"5"</code></td>
+            </tr>
+            <tr>
+              <td><code class="cpp normalsize">getJSON(3.5)</code></td><td>⇒</td><td>文字列 <code class="cpp normalsize">"3.50000"</code></td>
+            </tr>
+            <tr>
+              <td><code class="cpp normalsize">getJSON("hoge")</code></td><td>⇒</td><td>文字列 <code class="cpp normalsize">"<span class="under">\"</span>hoge<span class="under">\"</span>"</code></td>
+            </tr>
+            </tbody>
+          </table>
+          <p>となる関数 <code class="cpp normalsize">getJSON</code> を定義する。</p>
         </section>
         <section>
           <h1>concept なしの場合</h1>
-          <p>現在の C++ でも SFINAE という仕組みを使って getJSONを実現できる。</p>
+          <p>現在の C++ でも SFINAE という仕組みを使って <code class="cpp normalsize">getJSON</code> を実現できる。</p>
           <pre><code class="cpp">extern void* enabler;
 template &lt;bool condition, typename T = void&gt;
   using enable_if_type = typename std::enable_if_t&lt;condition, T&gt;;
@@ -127,12 +127,12 @@ int main(){
   std::cout &lt;&lt; getJSON("hello.") &lt;&lt; std::endl; // "hello."
   return 0;
 }</code></pre>
-          <p>しかし、非常に意味の読み取りにくいコードになる。<span style="font-size: 70%;">ときに黒魔術と呼ばれる。</span> <br>
+          <p>しかし、非常に意味の読み取りにくいコードになる。<span class="weak">ときに黒魔術と呼ばれる。</span> <br>
             （初期の C++ ではこのようなコードを想定していなかったため）</p>
         </section>
         <section>
           <h1>concept による型の制約</h1>
-          <p>concept を使うと、getJSON はこうなる。</p>
+          <p>concept を使うと、<code class="cpp normalsize">getJSON</code> はこうなる。</p>
           <pre><code>// 数値（算術型）であるという制約
 template &lt;typename T&gt; concept ConceptNumeric = std::is_arithmetic_v&lt;T&gt;;
 // 文字列（const char * または std::string）であるという制約
@@ -152,7 +152,8 @@ int main(){
   std::cout &lt;&lt; getJSON("hello.") &lt;&lt; std::endl; // "hello."
   return 0;
 }</code></pre>
-          <p>かなり可読性が上がる。また、エラーメッセージも分かり易くなる。</p>
+          <p>かなり可読性が上がる。<span class="weak">なお、これは最新ドラフト版の書き方。最終版では変わるかもしれない。</span> </p>
+          <p>concept は、型を値に持つ「変数」の「型」のようなもの。</p>
         </section>
         <section>
           <h1>GCC で実行できる concept</h1>
@@ -161,21 +162,21 @@ int main(){
           <pre><code>// 数値（算術型）であるという制約
 template &lt;typename T&gt; concept bool ConceptNumeric = std::is_arithmetic_v&lt;T&gt;;
 // 文字列（const char * または std::string）であるという制約
-template &lt;typename T&gt; concept bool ConceptCString = std::is_same_v&lt;T, const char *&gt; ||
-                                                    std::is_same_v&lt;T, std::string&gt;;
+template &lt;typename T&gt; concept bool ConceptString = std::is_same_v&lt;T, const char *&gt; ||
+                                                   std::is_same_v&lt;T, std::string&gt;;
 
 // 数値
 auto getJSON(ConceptNumeric x){ return std::to_string(x); }
 
 // 文字列型 (const char *)
-auto getJSON(ConceptCString x){ return "\"" + std::string(x) + "\""; }
+auto getJSON(ConceptString x){ return "\"" + std::string(x) + "\""; }
 
 int main(){
   std::cout &lt;&lt; getJSON(5) &lt;&lt; std::endl; // 5
   std::cout &lt;&lt; getJSON("hello.") &lt;&lt; std::endl; // "hello."
   return 0;
 }</code></pre>
-          <p>これは g++ 9.0 (-std=c++2a -fconcepts) でコンパイルを確認している。</p>
+          <p>これは g++ 9.0 (-std=c++2a -fconcepts) でコンパイルできる。</p>
         </section>
         <section>
           <h1>まとめ</h1>
