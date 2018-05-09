@@ -43,8 +43,8 @@
         text-align: left;
         line-height: 180%; }
       .reveal li { margin: 25px 15px 0 0; }
-      .reveal code {font-size: 130%; line-height: 110%;}
-      .reveal .normalsize {font-size: 100%; line-height: 100%;}
+      .reveal code {font-size: 130%; line-height: 110%; }
+      .reveal .normalsize {font-size: 110%; line-height: 100%;}
       .reveal .weak {font-size: 70%;}
       .reveal .under {border-bottom: dashed 2px green;}
     </style>
@@ -77,11 +77,11 @@
           <p>C++では引数の型によって関数のオーバーロードができる。</p>
           <pre><code class="cpp">int    add(int    a, int    b){ return a + b; }
 double add(double a, double b){ return a + b; }</code></pre>
-          <p>template を使うと、複数の型を <code class="cpp normalsize">typename T</code> で置き換えて</p>
+          <p>template を使うと、<code class="cpp normalsize">int</code> や <code class="cpp normalsize">double</code> を template 引数 <code class="cpp normalsize">T</code> にまとめて</p>
           <pre><code class="cpp">template &lt;typename T&gt;
   T add(T a, T b){ return a + b; }</code></pre>
           <p>と書ける。</p>
-          <p>このように、型を値に持つ変数（のようなもの）を考えるのが TMP。</p>
+          <p>この <code class="cpp normalsize">T</code> のように、型を値として持つ変数（のようなもの）を考えるのが TMP。</p>
         </section>
         <section>
           <h1>型の場合分け</h1>
@@ -104,9 +104,10 @@ double add(double a, double b){ return a + b; }</code></pre>
             </tr>
             </tbody>
           </table>
-          <p>となる関数 <code class="cpp normalsize">getJSON</code> を定義する。</p>
+          <p>となる関数 <code class="cpp normalsize">getJSON</code> を定義したい。</p>
         </section>
         <section>
+          <section>
           <h1>concept なしの場合</h1>
           <p>現在の C++ でも SFINAE という仕組みを使って <code class="cpp normalsize">getJSON</code> を実現できる。</p>
           <pre><code class="cpp">extern void* enabler;
@@ -128,7 +129,15 @@ int main(){
   return 0;
 }</code></pre>
           <p>しかし、非常に意味の読み取りにくいコードになる。<span class="weak">ときに黒魔術と呼ばれる。</span> <br>
-            （初期の C++ ではこのようなコードを想定していなかったため）</p>
+            （本来、SFINAE という仕組みはこのような目的に使うものではなかった。<br>言わば言語仕様の抜け穴を濫用しているようなもの。）</p>
+          </section>
+          <section>
+            <h1>SFINAE</h1>
+            <p>"Substitution Failure Is Not An Error" の略。<span class="weak">発音はスフィネェとかスフィナェとか。</span></p>
+            <p>直訳すれば「代入失敗はエラーじゃない」</p>
+            <p>元々は、多重定義の中で正しく動く定義が 1 個見付けられるなら、他の定義に不正な処理があっても見逃そう（エラーにしない）という仕組み。</p>
+            <p>SFINAE には「不正な処理かどうか」という<strong>条件判定</strong>が内在しているため、これを濫用（と言うか悪用）して、型による<strong>場合分け</strong>が実現できる。</p>
+          </section>
         </section>
         <section>
           <h1>concept による型の制約</h1>
@@ -153,7 +162,7 @@ int main(){
   return 0;
 }</code></pre>
           <p>かなり可読性が上がる。<span class="weak">なお、これは最新ドラフト版の書き方。最終版では変わるかもしれない。</span> </p>
-          <p>concept は、型を値に持つ「変数」の「型」のようなもの。</p>
+          <p>concept は、「型を値として持つ変数」の「型」のようなもの。</p>
         </section>
         <section>
           <h1>GCC で実行できる concept</h1>
